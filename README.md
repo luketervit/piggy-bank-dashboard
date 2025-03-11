@@ -2,7 +2,6 @@
 
 A modern dashboard application for monitoring and controlling a smart piggy bank with educational games. The project consists of a frontend React application and an ESP32-based backend.
 
-```
 
 ## Features
 
