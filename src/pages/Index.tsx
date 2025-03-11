@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
-import Dashboard from "@/components/layout/Dashboard";
+import Dashboard from "@/components/dashboard/Dashboard";
 
 const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(true); // Default to authenticated

@@ -1,69 +1,120 @@
-# Welcome to your Lovable project
+# Piggy Bank Dashboard
 
-## Project info
+A modern dashboard application for monitoring and controlling a smart piggy bank with educational games. The project consists of a frontend React application and an ESP32-based backend.
 
-**URL**: https://lovable.dev/projects/3910151c-b641-4255-baad-f2ffe3d9e984
+## Project Structure
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/3910151c-b641-4255-baad-f2ffe3d9e984) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+piggy-bank-dashboard/
+├── frontend/           # React application for the dashboard
+│   ├── src/           # Source code
+│   ├── public/        # Static assets
+│   └── package.json   # Frontend dependencies
+├── backend/           # ESP32 firmware and related files
+│   ├── src/          # ESP32 source code
+│   │   ├── wifistuff.cpp
+│   │   ├── wifistuff.h
+│   │   └── ...       # Other ESP32 files
+│   └── README.md     # Backend-specific documentation
+└── README.md         # This file
 ```
 
-**Edit a file directly in GitHub**
+## Features
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- Real-time monitoring of piggy bank contents
+- Educational math games with multiple difficulty levels
+- Two game modes:
+  - Coin Combinations: Given an amount, add up to it using coins
+  - Add Them Up: Add coins and submit the total amount
+- Performance tracking and analytics
+- Remote control of coin dispensing
+- WiFi connectivity for remote access
 
-**Use GitHub Codespaces**
+## Prerequisites
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- Node.js (v16 or higher)
+- Arduino IDE or PlatformIO for ESP32 development
+- ESP32 development board
+- Required ESP32 libraries:
+  - WiFiManager
+  - WebServer
+  - ESPmDNS
+  - ArduinoJson
 
-## What technologies are used for this project?
+## Setup Instructions
 
-This project is built with .
+### Frontend Setup
 
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. The dashboard will be available at `http://localhost:5173`
+
+### Backend Setup (ESP32)
+
+1. Open the backend project in Arduino IDE or PlatformIO
+2. Install required libraries through the library manager
+3. Configure WiFi settings in `wifistuff.cpp`:
+   ```cpp
+   const char* ssid = "PiggyBank_AP";
+   const char* password = "0inkMoney!";
+   ```
+4. Upload the firmware to your ESP32
+
+### Connecting Frontend to Backend
+
+1. The ESP32 creates a WiFi access point named "PiggyBank_AP"
+2. Connect to this network using the password "0inkMoney!"
+3. The dashboard will automatically connect to the piggy bank at `http://piggybank.local`
+
+## API Endpoints
+
+The ESP32 provides the following REST API endpoints:
+
+- `GET /api/bankvalues` - Get current coin counts
+- `GET /api/gamehistory` - Get game history
+- `POST /api/exactdispense` - Dispense exact amount
+- `POST /api/denominationdispense` - Dispense specific denomination
+- `DELETE /api/emptybank` - Dispense all coins
+
+## Development
+
+### Frontend Development
+
+The frontend is built with:
+- React + TypeScript
 - Vite
-- TypeScript
-- React
-- shadcn-ui
 - Tailwind CSS
+- Recharts for data visualization
 
-## How can I deploy this project?
+### Backend Development
 
-Simply open [Lovable](https://lovable.dev/projects/3910151c-b641-4255-baad-f2ffe3d9e984) and click on Share -> Publish.
+The ESP32 firmware handles:
+- WiFi connectivity
+- Coin counting and dispensing
+- Game logic and scoring
+- Data storage
 
-## I want to use a custom domain - is that possible?
+## Contributing
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

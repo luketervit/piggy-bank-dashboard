@@ -1,20 +1,12 @@
-
+import { useContext } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowDown, ArrowUp, GamepadIcon } from "lucide-react";
+import { DashboardContext } from "./Dashboard";
 
-type GameResult = {
-  id: string;
-  game: string;
-  result: "win" | "loss";
-  amount: number;
-  date: string;
-};
+const GameHistory = () => {
+  // Get game history from dashboard context
+  const { gameHistory } = useContext(DashboardContext);
 
-type GameHistoryProps = {
-  history: GameResult[];
-};
-
-const GameHistory = ({ history }: GameHistoryProps) => {
   return (
     <Card className="shadow-md">
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
@@ -23,11 +15,20 @@ const GameHistory = ({ history }: GameHistoryProps) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {history.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">No games played yet</p>
+          {gameHistory.length === 0 ? (
+            <div className="grid grid-cols-1 gap-3 py-2">
+              {/* Empty state with placeholder items to maintain layout */}
+              {[1, 2, 3].map((i) => (
+                <div 
+                  key={i}
+                  className="bg-secondary/30 p-3 rounded-lg animate-pulse"
+                  style={{ height: "60px" }}
+                />
+              ))}
+            </div>
           ) : (
             <ul className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
-              {history.map((item) => (
+              {gameHistory.map((item) => (
                 <li key={item.id} className="flex items-center justify-between bg-secondary/50 p-3 rounded-lg">
                   <div>
                     <p className="font-medium">{item.game}</p>
