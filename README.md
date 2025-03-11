@@ -2,21 +2,6 @@
 
 A modern dashboard application for monitoring and controlling a smart piggy bank with educational games. The project consists of a frontend React application and an ESP32-based backend.
 
-## Project Structure
-
-```
-piggy-bank-dashboard/
-├── frontend/           # React application for the dashboard
-│   ├── src/           # Source code
-│   ├── public/        # Static assets
-│   └── package.json   # Frontend dependencies
-├── backend/           # ESP32 firmware and related files
-│   ├── src/          # ESP32 source code
-│   │   ├── wifistuff.cpp
-│   │   ├── wifistuff.h
-│   │   └── ...       # Other ESP32 files
-│   └── README.md     # Backend-specific documentation
-└── README.md         # This file
 ```
 
 ## Features

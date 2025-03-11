@@ -15,17 +15,19 @@ export const DashboardContext = createContext<{
   mathGameSessions: any[];
   balance: number;
   isConnected: boolean;
+  lastUpdated: Date | null;
 }>({
   coinData: {},
   gameHistory: [],
   mathGameSessions: [],
   balance: 0,
-  isConnected: false
+  isConnected: false,
+  lastUpdated: null
 });
 
 // Inline ConnectionStatus component
 const ConnectionStatus = () => {
-  const { isConnected } = useContext(DashboardContext);
+  const { isConnected, lastUpdated } = useContext(DashboardContext);
   
   return (
     <div className="fixed bottom-4 right-4 flex items-center space-x-2 bg-white dark:bg-gray-800 px-3 py-2 rounded-full shadow-md z-50">
@@ -39,6 +41,11 @@ const ConnectionStatus = () => {
           ? "Connected to Piggy Bank" 
           : "Disconnected"}
       </span>
+      {lastUpdated && (
+        <span className="text-xs text-muted-foreground ml-1">
+          {`Last updated: ${lastUpdated.toLocaleTimeString()}`}
+        </span>
+      )}
     </div>
   );
 };
@@ -49,7 +56,10 @@ const Dashboard = () => {
   const [mathGameSessions, setMathGameSessions] = useState<any[]>([]);
   const [balance, setBalance] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [connectionAttempts, setConnectionAttempts] = useState(0);
   const updateIntervalRef = useRef<any>(null);
+  const maxRetries = 5;
 
   // Calculate total balance from coin data
   const calculateTotalBalance = (data: CoinData) => {
@@ -77,7 +87,7 @@ const Dashboard = () => {
         value => newCoinData[value] === undefined
       );
       
-      if (coinDataChanged || coinValuesRemoved) {
+      if (coinDataChanged || coinValuesRemoved || Object.keys(coinData).length === 0) {
         setCoinData(newCoinData);
         const newBalance = calculateTotalBalance(newCoinData);
         setBalance(newBalance);
@@ -87,8 +97,8 @@ const Dashboard = () => {
       // Fetch game history
       const newGameHistory = await fetchGameHistory();
       
-      // Check if game history changed (new items or more items)
-      if (newGameHistory.length !== gameHistory.length) {
+      // Check if game history changed
+      if (JSON.stringify(newGameHistory) !== JSON.stringify(gameHistory)) {
         setGameHistory(newGameHistory);
         hasChanges = true;
         
@@ -113,10 +123,28 @@ const Dashboard = () => {
         }
       }
       
+      // Reset connection attempts on successful connection
+      setConnectionAttempts(0);
       setIsConnected(true);
+      setLastUpdated(new Date());
     } catch (err) {
       console.error("Error updating data:", err);
-      setIsConnected(false);
+      
+      // Increment connection attempts
+      setConnectionAttempts(prev => prev + 1);
+      
+      // If we've exceeded max retries, stop trying
+      if (connectionAttempts >= maxRetries) {
+        setIsConnected(false);
+        
+        // Clear the interval and set a longer one
+        if (updateIntervalRef.current) {
+          clearInterval(updateIntervalRef.current);
+          updateIntervalRef.current = setInterval(updateData, 10000); // Try again every 10 seconds
+        }
+      } else {
+        setIsConnected(false);
+      }
     }
   };
 
@@ -141,7 +169,8 @@ const Dashboard = () => {
     gameHistory,
     mathGameSessions,
     balance,
-    isConnected
+    isConnected,
+    lastUpdated
   };
 
   return (
@@ -152,7 +181,9 @@ const Dashboard = () => {
           <p className="text-muted-foreground mt-1">
             {isConnected 
               ? "Connected and continuously updating" 
-              : "Attempting to connect to device..."}
+              : connectionAttempts >= maxRetries
+                ? "Connection to piggybank.local failed. Check if device is on the same network."
+                : "Attempting to connect to piggybank.local..."}
           </p>
         </div>
         

@@ -1,7 +1,7 @@
 // src/lib/apiService.ts
 import { toast } from "@/hooks/use-toast";
 
-const API_BASE_URL = "http://piggybank.local"; // Using mDNS domain from wifistuff.cpp
+const API_BASE_URL = "http://piggybank.local"; // Using mDNS domain
 
 export type CoinData = {
   [key: string]: number; // coinValue: count mapping
@@ -36,7 +36,7 @@ export const fetchBankValues = async (): Promise<CoinData> => {
       description: "Could not connect to Piggy Bank device. Please ensure it's powered on and connected to WiFi.",
       variant: "destructive",
     });
-    return {}; // Return empty object in case of error
+    throw error; // Re-throw to allow component to handle connection state
   }
 };
 
@@ -51,15 +51,30 @@ export const fetchGameHistory = async (): Promise<GameHistoryItem[]> => {
     }
     const data = await response.json();
     
-    // Format the data to match the expected GameHistoryItem structure
-    // Based on the FileOps.cpp implementation seen in wifistuff.cpp
+    // Check if the response has a 'games' property (format from ESP32)
+    if (data && data.games && Array.isArray(data.games)) {
+      return data.games.map((item: any) => ({
+        id: item.id || String(Math.random().toString(36).substr(2, 9)),
+        game: item.game || "Math Game",
+        result: item.result || "win",
+        amount: item.amount || 0,
+        date: item.timestamp || new Date().toLocaleDateString(),
+        timestamp: item.timestamp,
+        correct: item.correct,
+        incorrect: item.incorrect
+      }));
+    }
+    
+    // Handle direct array format
     return Array.isArray(data) ? data.map(item => ({
       id: item.id || String(Math.random().toString(36).substr(2, 9)),
       game: item.game || "Math Game",
       result: item.result || "win",
       amount: item.amount || 0,
       date: item.timestamp || new Date().toLocaleDateString(),
-      timestamp: item.timestamp
+      timestamp: item.timestamp,
+      correct: item.correct,
+      incorrect: item.incorrect
     })) : [];
   } catch (error) {
     console.error("Error fetching game history:", error);
@@ -68,7 +83,7 @@ export const fetchGameHistory = async (): Promise<GameHistoryItem[]> => {
       description: "Could not connect to Piggy Bank device. Please ensure it's powered on and connected to WiFi.",
       variant: "destructive",
     });
-    return []; // Return empty array in case of error
+    throw error; // Re-throw to allow component to handle connection state
   }
 };
 
@@ -164,6 +179,40 @@ export const emptyBank = async (): Promise<boolean> => {
     toast({
       title: "Error",
       description: "Could not empty the Piggy Bank. Please try again.",
+      variant: "destructive",
+    });
+    return false;
+  }
+};
+
+/**
+ * Updates the lock status of the device
+ */
+export const updateLockStatus = async (locked: boolean): Promise<boolean> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/lock`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ locked }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to update lock status: ${response.statusText}`);
+    }
+    
+    toast({
+      title: "Success",
+      description: locked ? "Device locked successfully" : "Device unlocked successfully",
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Error updating lock status:", error);
+    toast({
+      title: "Error",
+      description: "Could not update device lock status. Please try again.",
       variant: "destructive",
     });
     return false;
